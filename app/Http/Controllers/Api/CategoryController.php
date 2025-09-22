@@ -1,0 +1,136 @@
+<?php
+
+namespace App\Http\Controllers\Api;
+
+use App\Http\Controllers\Controller;
+use App\Models\Category;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
+
+class CategoryController extends Controller
+{
+    /**
+     * Liste de toutes les catégories
+     */
+    public function index()
+    {
+        $categories = Category::all();
+
+        return response()->json([
+            'success' => true,
+            'data' => $categories
+        ]);
+    }
+
+    /**
+     * Créer une nouvelle catégorie
+     */
+    public function store(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'name' => 'required|string|max:255',
+            'imageUrl' => 'nullable|string',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur de validation',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $category = Category::create([
+            'categoryId' => Str::uuid(),
+            'name' => $request->name,
+            'imageUrl' => $request->imageUrl,
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Catégorie créée avec succès',
+            'data' => $category
+        ], 201);
+    }
+
+    /**
+     * Afficher une catégorie spécifique
+     */
+    public function show($categoryId)
+    {
+        $category = Category::where('categoryId', $categoryId)
+            ->with('recipes')
+            ->first();
+
+        if (!$category) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Catégorie non trouvée'
+            ], 404);
+        }
+
+        return response()->json([
+            'success' => true,
+            'data' => $category
+        ]);
+    }
+
+    /**
+     * Mettre à jour une catégorie
+     */
+    public function update(Request $request, $categoryId)
+    {
+        $category = Category::where('categoryId', $categoryId)->first();
+
+        if (!$category) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Catégorie non trouvée'
+            ], 404);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'name' => 'sometimes|string|max:255',
+            'imageUrl' => 'sometimes|nullable|string',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erreur de validation',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $category->update($request->only(['name', 'imageUrl']));
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Catégorie mise à jour avec succès',
+            'data' => $category
+        ]);
+    }
+
+    /**
+     * Supprimer une catégorie
+     */
+    public function destroy($categoryId)
+    {
+        $category = Category::where('categoryId', $categoryId)->first();
+
+        if (!$category) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Catégorie non trouvée'
+            ], 404);
+        }
+
+        $category->delete();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Catégorie supprimée avec succès'
+        ]);
+    }
+}
