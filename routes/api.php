@@ -32,11 +32,12 @@ Route::prefix('users')->group(function () {
 // Routes catégories
 Route::get('categories', [CategoryController::class, 'index']);
 Route::get('categories/{categoryId}', [CategoryController::class, 'show']);
+Route::get('categories/{categoryId}/recipes', [CategoryController::class, 'recipes']);
 Route::post('categories', [CategoryController::class, 'store']);
 Route::put('categories/{categoryId}', [CategoryController::class, 'update']);
 Route::delete('categories/{categoryId}', [CategoryController::class, 'destroy']);
 
-Route::middleware('firebase.user')->group(function () {
+// Route::middleware('firebase.user')->group(function () {
 // Routes recettes
 Route::get('recipes', [RecipeController::class, 'index']);
 Route::get('recipes/popular', [RecipeController::class, 'popular']);
@@ -67,4 +68,4 @@ Route::delete('comments/{commentId}', [CommentController::class, 'destroy']);
 // Routes upload d'images
 Route::post('upload/image', [UploadController::class, 'uploadImage']);
 Route::delete('upload/image', [UploadController::class, 'deleteImage']);
-});
+// });

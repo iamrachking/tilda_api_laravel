@@ -12,6 +12,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Global middleware - CORS en premier pour toutes les routes (web et api)
+        $middleware->append(\App\Http\Middleware\CorsMiddleware::class);
+
+        // Alias pour middlewares route
         $middleware->alias([
             'firebase.user' => 
             \App\Http\Middleware\FirebaseUserMiddleware::class

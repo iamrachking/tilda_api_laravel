@@ -46,7 +46,7 @@ class CategoryController extends Controller
             'categoryId' => Str::uuid(),
             'name' => $request->name,
             'imageUrl' => $request->imageUrl,
-        ]);
+        ]); 
 
         return redirect()->route('categories.index')
             ->with('success', 'Catégorie créée avec succès !');

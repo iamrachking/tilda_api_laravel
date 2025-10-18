@@ -15,7 +15,7 @@ class CategoryController extends Controller
      */
     public function index()
     {
-        $categories = Category::all();
+        $categories = Category::with('recipes')->get();
 
         return response()->json([
             'success' => true,
@@ -109,6 +109,43 @@ class CategoryController extends Controller
             'success' => true,
             'message' => 'Catégorie mise à jour avec succès',
             'data' => $category
+        ]);
+    }
+
+    /**
+     * Récupérer toutes les recettes d'une catégorie avec pagination
+     */
+    public function recipes(Request $request, $categoryId)
+    {
+        $category = Category::where('categoryId', $categoryId)->first();
+
+        if (!$category) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Catégorie non trouvée'
+            ], 404);
+        }
+
+        // Recherche par titre dans les recettes de cette catégorie
+        $query = $category->recipes()->with(['chef']);
+
+        if ($request->has('search')) {
+            $query->where('title', 'like', '%' . $request->search . '%');
+        }
+
+        // Tri
+        $sortBy = $request->get('sortBy', 'created_at');
+        $sortOrder = $request->get('sortOrder', 'desc');
+        $query->orderBy($sortBy, $sortOrder);
+
+        $recipes = $query->paginate($request->get('per_page', 15));
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'category' => $category,
+                'recipes' => $recipes
+            ]
         ]);
     }
 

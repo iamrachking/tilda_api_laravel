@@ -69,7 +69,7 @@ Récupérer les recettes de l'utilisateur (nécessite authentification)
 ### 📂 Catégories
 
 #### GET /categories
-Liste de toutes les catégories
+Liste de toutes les catégories avec leurs recettes associées
 
 **Réponse :**
 ```json
@@ -82,14 +82,94 @@ Liste de toutes les catégories
             "name": "Plats principaux",
             "imageUrl": "https://example.com/category.jpg",
             "created_at": "2024-01-01T09:00:00.000000Z",
-            "updated_at": "2024-01-01T09:00:00.000000Z"
+            "updated_at": "2024-01-01T09:00:00.000000Z",
+            "recipes": [
+                {
+                    "id": 1,
+                    "recipeId": "recipe_uuid_123",
+                    "title": "Pâtes Carbonara",
+                    "imageUrl": "https://example.com/recipe.jpg",
+                    "description": "Une délicieuse recette de pâtes",
+                    "categoryId": "cat_uuid_123",
+                    "chefId": "firebase_user_123",
+                    "duration": "20 min",
+                    "likesCount": 15,
+                    "created_at": "2024-01-01T10:00:00.000000Z",
+                    "updated_at": "2024-01-01T10:00:00.000000Z"
+                }
+            ]
         }
     ]
 }
 ```
 
 #### GET /categories/{categoryId}
-Détails d'une catégorie avec ses recettes
+Détails d'une catégorie avec toutes ses recettes associées
+
+#### GET /categories/{categoryId}/recipes
+Récupérer toutes les recettes d'une catégorie avec pagination
+
+**Paramètres de requête :**
+- `page` : numéro de page (défaut: 1)
+- `per_page` : nombre d'éléments par page (défaut: 15)
+- `search` : rechercher par titre dans les recettes de cette catégorie
+- `sortBy` : trier par (created_at, title, likesCount, favoritesCount)
+- `sortOrder` : ordre (asc, desc)
+
+**Exemple :**
+```
+GET /categories/cat_uuid_123/recipes?search=pâtes&sortBy=likesCount&sortOrder=desc&page=1&per_page=10
+```
+
+**Réponse :**
+```json
+{
+    "success": true,
+    "data": {
+        "category": {
+            "id": 1,
+            "categoryId": "cat_uuid_123",
+            "name": "Plats principaux",
+            "imageUrl": "https://example.com/category.jpg"
+        },
+        "recipes": {
+            "current_page": 1,
+            "data": [
+                {
+                    "id": 1,
+                    "recipeId": "recipe_uuid_123",
+                    "title": "Pâtes Carbonara",
+                    "imageUrl": "https://example.com/recipe.jpg",
+                    "description": "Une délicieuse recette de pâtes",
+                    "categoryId": "cat_uuid_123",
+                    "chefId": "firebase_user_123",
+                    "duration": "20 min",
+                    "likesCount": 15,
+                    "created_at": "2024-01-01T10:00:00.000000Z",
+                    "updated_at": "2024-01-01T10:00:00.000000Z",
+                    "chef": {
+                        "id": 1,
+                        "userId": "firebase_user_123",
+                        "name": "John Doe",
+                        "email": "john@example.com",
+                        "avatarUrl": "https://example.com/avatar.jpg"
+                    }
+                }
+            ],
+            "first_page_url": "http://localhost:8000/api/categories/cat_uuid_123/recipes?page=1",
+            "from": 1,
+            "last_page": 3,
+            "last_page_url": "http://localhost:8000/api/categories/cat_uuid_123/recipes?page=3",
+            "next_page_url": "http://localhost:8000/api/categories/cat_uuid_123/recipes?page=2",
+            "path": "http://localhost:8000/api/categories/cat_uuid_123/recipes",
+            "per_page": 15,
+            "prev_page_url": null,
+            "to": 15,
+            "total": 45
+        }
+    }
+}
+```
 
 #### POST /categories
 Créer une catégorie
@@ -408,7 +488,22 @@ Supprimer une image (nécessite authentification)
     "name": "Plats principaux",
     "imageUrl": "https://example.com/category.jpg",
     "created_at": "2024-01-01T09:00:00.000000Z",
-    "updated_at": "2024-01-01T09:00:00.000000Z"
+    "updated_at": "2024-01-01T09:00:00.000000Z",
+    "recipes": [
+        {
+            "id": 1,
+            "recipeId": "recipe_uuid_123",
+            "title": "Pâtes Carbonara",
+            "imageUrl": "https://example.com/recipe.jpg",
+            "description": "Description de la recette",
+            "categoryId": "cat_uuid_123",
+            "chefId": "firebase_user_123",
+            "duration": "20 min",
+            "likesCount": 15,
+            "created_at": "2024-01-01T10:00:00.000000Z",
+            "updated_at": "2024-01-01T10:00:00.000000Z"
+        }
+    ]
 }
 ```
 
@@ -435,6 +530,16 @@ curl -X POST http://localhost:8000/api/recipes \
 ```bash
 curl -X GET "http://localhost:8000/api/recipes?page=1&per_page=10&search=pâtes" \
   -H "X-User-ID: firebase_user_123"
+```
+
+### Récupérer les catégories avec leurs recettes
+```bash
+curl -X GET "http://localhost:8000/api/categories"
+```
+
+### Récupérer toutes les recettes d'une catégorie
+```bash
+curl -X GET "http://localhost:8000/api/categories/cat_uuid_123/recipes?search=pâtes&sortBy=likesCount&sortOrder=desc"
 ```
 
 ---
