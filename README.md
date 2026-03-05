@@ -1,177 +1,94 @@
-# 🍳 Tilda Recipes API
+# Tilda Recipes API
 
-API backend pour l'application mobile de recettes de cuisine développée avec Flutter.
+Backend Laravel pour l’app mobile de recettes (Flutter). Authentification Firebase, CRUD recettes, catégories, favoris, likes, commentaires et upload d’images.
 
-## ✨ Fonctionnalités
+## Prérequis
 
-- **Authentification Firebase** : Intégration transparente avec Firebase Auth
-- **Gestion des recettes** : CRUD complet avec recherche et filtres
-- **Catégories** : Organisation des recettes par catégories
-- **Système social** : Likes, favoris et commentaires
-- **Upload d'images** : Gestion des images de profil, recettes et catégories
-- **API RESTful** : Endpoints structurés avec pagination
+- PHP 8.2+
+- Composer
+- SQLite ou MySQL
+- Node.js (pour les assets si besoin)
 
-## 🛠️ Technologies
+## Installation
 
-- **Laravel 12** (PHP 8.2+)
-- **SQLite/MySQL** (Base de données)
-- **Firebase Auth** (Authentification)
-- **Laravel Storage** (Fichiers)
-
-## ⚡ Installation
-
-### Installation Rapide
-
-#### Windows
-```powershell
-.\setup.ps1
-```
-
-#### Linux/Mac
-```bash
-chmod +x setup.sh
-./setup.sh
-```
-
-### Installation Manuelle
-
-1. **Cloner et installer**
+**Cloner et dépendances :**
 ```bash
 git clone <repository-url>
 cd tilda_api_laravel
 composer install
-npm install
 ```
 
-2. **Configuration**
+**Environnement :**
 ```bash
 cp .env.example .env
 php artisan key:generate
 ```
 
-3. **Base de données**
+**Base de données :**
 ```bash
 php artisan migrate
 php artisan db:seed
 php artisan storage:link
 ```
 
-4. **Démarrer**
+**Lancer le serveur :**
 ```bash
 php artisan serve
 ```
 
-API disponible sur `http://localhost:8000/api`
+L’API est disponible sur `http://localhost:8000/api`.
 
-## 📚 Documentation API
+### Scripts d’installation
 
-- **[Documentation complète](API_DOCUMENTATION.md)** - Tous les endpoints
-- **[Guide Firebase](FIREBASE_AUTH_GUIDE.md)** - Intégration Flutter
+- Windows : `.\setup.ps1`
+- Linux/Mac : `chmod +x setup.sh` puis `./setup.sh`
 
-### Endpoints Principaux
+## Authentification
+
+L’API s’appuie sur Firebase Auth. Les infos utilisateur sont passées en en-têtes :
 
 ```
-# Utilisateurs
-POST   /api/users/create
-GET    /api/users/profile
-PUT    /api/users/profile
-
-# Catégories
-GET    /api/categories
-POST   /api/categories
-PUT    /api/categories/{id}
-DELETE /api/categories/{id}
-
-# Recettes
-GET    /api/recipes
-GET    /api/recipes/popular
-GET    /api/recipes/recent
-POST   /api/recipes
-PUT    /api/recipes/{id}
-DELETE /api/recipes/{id}
-
-# Social
-GET    /api/favorites
-POST   /api/favorites
-GET    /api/likes
-POST   /api/likes
-GET    /api/recipes/{id}/comments
-POST   /api/comments
-
-# Upload
-POST   /api/upload/image
-DELETE /api/upload/image
+X-User-ID: <firebase_uid>
+X-User-Name: <nom>
+X-User-Email: <email>
+X-User-Avatar: <url_avatar>
 ```
 
-## 🔑 Authentification
+## Endpoints
 
-L'API utilise Firebase Auth via en-têtes HTTP :
+| Méthode | Route | Description |
+|--------|--------|-------------|
+| POST | /api/users/create | Créer un utilisateur |
+| GET | /api/users/profile | Profil utilisateur |
+| PUT | /api/users/profile | Modifier le profil |
+| GET | /api/categories | Liste des catégories |
+| POST | /api/categories | Créer une catégorie |
+| PUT | /api/categories/{id} | Modifier une catégorie |
+| DELETE | /api/categories/{id} | Supprimer une catégorie |
+| GET | /api/recipes | Liste des recettes |
+| GET | /api/recipes/popular | Recettes populaires |
+| GET | /api/recipes/recent | Recettes récentes |
+| POST | /api/recipes | Créer une recette |
+| PUT | /api/recipes/{id} | Modifier une recette |
+| DELETE | /api/recipes/{id} | Supprimer une recette |
+| GET | /api/favorites | Favoris |
+| POST | /api/favorites | Ajouter aux favoris |
+| GET | /api/likes | Likes |
+| POST | /api/likes | Liker |
+| GET | /api/recipes/{id}/comments | Commentaires d’une recette |
+| POST | /api/comments | Ajouter un commentaire |
+| POST | /api/upload/image | Upload image |
+| DELETE | /api/upload/image | Supprimer image |
 
-```http
-X-User-ID: firebase_user_123
-X-User-Name: John Doe
-X-User-Email: john@example.com
-X-User-Avatar: https://example.com/avatar.jpg
-```
+## Documentation
 
-## 🗄️ Base de Données
+- [API détaillée](API_DOCUMENTATION.md)
+- [Firebase + Flutter](FIREBASE_AUTH_GUIDE.md)
 
-### Tables
-- `users` - Utilisateurs (Firebase)
-- `categories` - Catégories de recettes
-- `recipes` - Recettes de cuisine
-- `favorites` - Favoris utilisateurs
-- `likes` - Likes utilisateurs
-- `comments` - Commentaires recettes
+## Base de données
 
-### Relations
-- User → hasMany → Recipes, Favorites, Likes, Comments
-- Recipe → belongsTo → User (chef), Category
-- Category → hasMany → Recipes
+Tables principales : `users`, `categories`, `recipes`, `favorites`, `likes`, `comments`. Un utilisateur a des recettes, favoris, likes et commentaires ; une recette appartient à un utilisateur (chef) et à une catégorie.
 
-<!-- ## 📱 Intégration Flutter
+## Licence
 
-### Modèle Recipe exemple
-```dart
-class Recipe {
-  final String recipeId;
-  final String title;
-  final String? imageUrl;
-  final String description;
-  final List<Map<String, dynamic>> ingredients;
-  final List<String> steps;
-  final String categoryId;  // ID pour l'envoi
-  final String chefId;      // ID pour l'envoi
-  final User? chef;         // Objet complet pour l'affichage
-  final Category? category; // Objet complet pour l'affichage
-  // ... autres propriétés
-}
-```
-
-### Flux d'authentification
-1. Connexion Firebase (une fois)
-2. Stockage local des infos utilisateur
-3. Envoi des headers à chaque requête API
-4. Création automatique de l'utilisateur en base
-
-<!-- ## 🧪 Tests
-
-```bash
-php artisan test
-```
-
-## 🚀 Déploiement
-
-```bash
-composer install --optimize-autoloader --no-dev
-php artisan config:cache
-php artisan route:cache
-``` -->
-
-## 📄 Licence
-
-MIT License
-
----
-
-**Développé avec ❤️ pour Tilda Recipes**
+MIT
